@@ -13,4 +13,5 @@ apps/mcp/build/
 
 .drizzle/
 
-apps/server/static/*.geojson
+*.zip
+
