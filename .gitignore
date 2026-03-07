@@ -11,7 +11,5 @@ apps/server/env/server.env
 apps/mcp/env/mcp.env
 apps/mcp/build/
 
-.drizzle/
-
 *.zip
 
