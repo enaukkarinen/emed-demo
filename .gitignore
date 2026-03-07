@@ -12,4 +12,5 @@ apps/mcp/env/mcp.env
 apps/mcp/build/
 
 *.zip
+.next/
 

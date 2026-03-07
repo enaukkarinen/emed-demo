@@ -8,8 +8,8 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "db:build": "docker compose -f docker/docker-compose.yml up -d",
-    "kb:ingest": "dotenv -e packages/kb/.env -- tsx packages/kb/scripts/kb-ingest.ts",
-    "kb:test": "dotenv -e  packages/kb/.env -- tsx packages/kb/scripts/kb-search-test.ts"
+    "kb:ingest": "dotenv -e .env -- tsx packages/kb/scripts/kb-ingest.ts",
+    "kb:test": "dotenv -e .env -- tsx packages/kb/scripts/kb-search-test.ts"
   },
   "devDependencies": {
     "@types/node": "20.0.0",
