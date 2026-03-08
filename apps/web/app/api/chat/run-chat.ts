@@ -1,19 +1,40 @@
 import OpenAI from "openai";
 import { toolRegistry, tools } from "./openai-tools/tool-registry";
 
-async function runTool(name: string, args: unknown): Promise<unknown> {
-  const tool = toolRegistry[name];
-  if (!tool) throw new Error(`[runTool] Unknown tool: "${name}"`);
+async function executeToolCalls(
+  toolCalls: OpenAI.Chat.ChatCompletionMessageToolCall[],
+): Promise<OpenAI.Chat.ChatCompletionToolMessageParam[]> {
+  const results: OpenAI.Chat.ChatCompletionToolMessageParam[] = [];
+  for (const tc of toolCalls) {
+    if (tc.type !== "function") {
+      console.warn(`[executeToolCalls] Skipping unsupported tool call type: ${tc.type}`);
+      continue;
+    }
 
-  console.log(`[runTool] → ${name}`, args);
-  try {
+    let args: unknown;
+    try {
+      args = JSON.parse(tc.function.arguments);
+    } catch (error) {
+      throw new Error(
+        `[executeToolCalls] Failed to parse arguments for tool "${tc.function.name}": ${tc.function.arguments}`,
+        { cause: error },
+      );
+    }
+
+    const tool = toolRegistry[tc.function.name];
+    if (!tool) throw new Error(`[executeToolCalls] Unknown tool: "${tc.function.name}"`);
+
+    console.log(`[executeToolCalls] → ${tc.function.name}`, args);
     const output = await tool.invoke(args);
-    console.log(`[runTool] ← ${name}`, output);
-    return output;
-  } catch (err) {
-    console.error(`[runTool] ✗ ${name} failed:`, err);
-    throw err;
+    console.log(`[executeToolCalls] ← ${tc.function.name}`, output);
+
+    results.push({
+      role: "tool",
+      tool_call_id: tc.id,
+      content: JSON.stringify(output),
+    });
   }
+  return results;
 }
 
 const MAX_TOOL_STEPS = 5;
@@ -39,42 +60,18 @@ export async function runChat(messages: OpenAI.Chat.ChatCompletionMessageParam[]
     const choice = response.choices[0];
     if (!choice) throw new Error("[runChat] No choices in OpenAI response");
 
-    const assistantMessage = choice.message;
-    messages.push(assistantMessage);
+    const { message, finish_reason } = choice;
+    console.log(`[runChat] finish_reason="${finish_reason}", tool_calls=${message.tool_calls?.length ?? 0}`);
 
-    console.log(
-      `[runChat] finish_reason="${choice.finish_reason}", tool_calls=${assistantMessage.tool_calls?.length ?? 0}`,
+    messages.push(message);
+
+    const isDone = !message.tool_calls?.length || finish_reason === "stop";
+    if (isDone) return message.content ?? "";
+
+    const toolResults = await executeToolCalls(
+      message.tool_calls! /* isDone check ensures tool_calls is not undefined */,
     );
-
-    // No tool calls — return the text content directly
-    if (!assistantMessage.tool_calls?.length || choice.finish_reason === "stop") {
-      return assistantMessage.content ?? "";
-    }
-
-    // Execute each tool call and append results
-    for (const toolCall of assistantMessage.tool_calls) {
-      if (toolCall.type !== "function") {
-        console.warn(`[runChat] Skipping unexpected tool type: "${toolCall.type}"`);
-        continue;
-      }
-
-      let args: unknown;
-      try {
-        args = JSON.parse(toolCall.function.arguments);
-      } catch {
-        throw new Error(
-          `[runChat] Failed to parse arguments for tool "${toolCall.function.name}": ${toolCall.function.arguments}`,
-        );
-      }
-
-      const output = await runTool(toolCall.function.name, args);
-
-      messages.push({
-        role: "tool",
-        tool_call_id: toolCall.id,
-        content: JSON.stringify(output),
-      });
-    }
+    messages.push(...toolResults);
   }
 
   throw new Error(`[runChat] Exceeded MAX_TOOL_STEPS (${MAX_TOOL_STEPS})`);
