@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import { keyframes } from "@mui/system";
 
 import { TypingIndicator } from "./TypingIndicator";
+import { CookieBanner } from "./CookieBanner";
 
 type Message = {
   role: "user" | "assistant";
@@ -24,6 +25,8 @@ export function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [consented, setConsented] = useState(false);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -170,15 +173,21 @@ export function Chat() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Ask about eligibility, medications, side effects..."
-            disabled={loading}
+            disabled={loading || !consented}
             variant="standard"
             inputRef={inputRef}
           />
-          <Button onClick={sendMessage} disabled={loading || !input.trim()} variant="contained" color="primary">
+          <Button
+            onClick={sendMessage}
+            disabled={loading || !input.trim() || !consented}
+            variant="contained"
+            color="primary"
+          >
             Send
           </Button>
         </Box>
       </Card>
+      <CookieBanner onConsent={() => setConsented(true)} />
     </Box>
   );
 }
