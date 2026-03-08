@@ -1,8 +1,7 @@
 import "dotenv/config";
 import OpenAI from "openai";
-import { Client } from "@elastic/elasticsearch";
 
-export const ES_INDEX = "emed-kb";
+import { getEsClient, KB_INDEX } from "@emed/es";
 
 export type KbSearchResult = {
   chunkId: string;
@@ -14,12 +13,6 @@ export type KbSearchResult = {
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export function getEsClient(): Client {
-  const node = process.env.ELASTICSEARCH_URL ?? "http://localhost:9200";
-  const apiKey = process.env.ELASTICSEARCH_API_KEY;
-  return new Client(apiKey ? { node, auth: { apiKey } } : { node });
-}
-
 export async function kbSearch(query: string, topK = 5): Promise<KbSearchResult[]> {
   const emb = await openai.embeddings.create({
     model: "text-embedding-3-small",
@@ -30,7 +23,7 @@ export async function kbSearch(query: string, topK = 5): Promise<KbSearchResult[
   const es = getEsClient();
 
   const response = await es.search({
-    index: ES_INDEX,
+    index: KB_INDEX,
     size: topK,
     knn: {
       field: "embedding",

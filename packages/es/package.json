@@ -1,12 +1,11 @@
 {
-  "name": "@emed/kb",
+  "name": "@emed/es",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "main": "./src/index.ts",
   "dependencies": {
     "@elastic/elasticsearch": "^8.17.0",
-    "@emed/es": "workspace:^",
     "dotenv": "^17.2.3",
     "openai": "^6.16.0"
   }

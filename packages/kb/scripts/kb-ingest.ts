@@ -4,7 +4,7 @@ import path from "path";
 import crypto from "crypto";
 import OpenAI from "openai";
 import { Client } from "@elastic/elasticsearch";
-import { ES_INDEX } from "../src/kbSearch.js";
+import { KB_INDEX } from "@emed/es";
 
 const KNOWLEDGE_BASE_DIR = path.resolve("knowledge-base");
 const CHUNK_SIZE = 800; // characters per chunk
@@ -38,10 +38,10 @@ function titleFromFilename(filename: string): string {
 }
 
 async function ensureIndex() {
-  const exists = await es.indices.exists({ index: ES_INDEX });
+  const exists = await es.indices.exists({ index: KB_INDEX });
   if (!exists) {
     await es.indices.create({
-      index: ES_INDEX,
+      index: KB_INDEX,
       mappings: {
         properties: {
           chunkId: { type: "keyword" },
@@ -57,7 +57,7 @@ async function ensureIndex() {
         },
       },
     });
-    console.log(`Created index: ${ES_INDEX}`);
+    console.log(`Created index: ${KB_INDEX}`);
   }
 }
 
@@ -87,7 +87,7 @@ async function ingest() {
       const embedding = embResponse.data[0].embedding;
 
       await es.index({
-        index: ES_INDEX,
+        index: KB_INDEX,
         id: chunkId,
         document: { chunkId, title, source, content, embedding },
       });
