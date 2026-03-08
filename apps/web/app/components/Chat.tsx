@@ -1,6 +1,12 @@
 "use client";
 
+import Card from "@mui/material/Card";
+import Box from "@mui/material/Box";
 import { useState, useRef, useEffect } from "react";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import theme from "../theme";
 
 type Message = {
   role: "user" | "assistant";
@@ -72,98 +78,89 @@ export function Chat() {
   }
 
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         display: "flex",
-        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "flex-start",
         height: "100vh",
-        maxWidth: 720,
-        margin: "0 auto",
-        padding: "0 16px",
+        padding: "4rem 2rem",
+        background: "#f9fafb",
       }}
     >
-      {/* Header */}
-      <div style={{ padding: "20px 0 12px", borderBottom: "1px solid #e5e7eb" }}>
-        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: "#111827" }}>eMed Assistant</h1>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>
-          Ask anything about the weight management programme
-        </p>
-      </div>
+      <Card
+        sx={{
+          minWidth: 275,
+          maxWidth: 600,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          padding: 3,
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ padding: 2 }}>
+          <Typography variant="h2">eMed Assistant</Typography>
+          <Typography variant="caption">Ask anything about the weight management programme</Typography>
+        </Box>
 
-      {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px 0" }}>
-        {messages.length === 0 && (
-          <div style={{ color: "#9ca3af", fontSize: 14, textAlign: "center", marginTop: 60 }}>
-            Ask a question to get started
-          </div>
-        )}
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            style={{
-              marginBottom: 16,
-              display: "flex",
-              justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-            }}
-          >
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 0" }}>
+          {messages.length === 0 && (
+            <div style={{ color: "#9ca3af", fontSize: 14, textAlign: "center", marginTop: 60 }}>
+              Ask a question to get started
+            </div>
+          )}
+          {messages.map((msg, i) => (
             <div
+              key={i}
               style={{
-                maxWidth: "80%",
-                padding: "10px 14px",
-                borderRadius: 12,
-                fontSize: 14,
-                lineHeight: 1.6,
-                background: msg.role === "user" ? "#2563eb" : "#ffffff",
-                color: msg.role === "user" ? "#ffffff" : "#111827",
-                border: msg.role === "assistant" ? "1px solid #e5e7eb" : "none",
-                whiteSpace: "pre-wrap",
+                marginBottom: 16,
+                display: "flex",
+                justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
               }}
             >
-              {msg.content || (loading && i === messages.length - 1 ? "▋" : "")}
+              <Box
+                sx={{
+                  maxWidth: "80%",
+                  padding: "10px 14px",
+                  borderRadius: 1,
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  background: msg.role === "user" ? theme.palette.primary.main : theme.palette.background.default,
+                  color: msg.role === "user" ? "#ffffff" : "#111827",
+                  border: msg.role === "assistant" ? "1px solid #e5e7eb" : "none",
+                  whiteSpace: "pre-wrap",
+                  marginBottom: 0,
+                  marginRight: msg.role === "user" ? 0 : 1,
+                  marginLeft: msg.role === "user" ? 1 : 0,
+                }}
+              >
+                {msg.content || (loading && i === messages.length - 1 ? "▋" : "")}
+              </Box>
             </div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
 
-      {/* Input */}
-      <div style={{ padding: "12px 0 24px", borderTop: "1px solid #e5e7eb" }}>
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            type="text"
+        {/* Input */}
+        <Box sx={{ display: "flex", gap: 2, padding: "1rem 0 0" }}>
+          <TextField
+            sx={{ flex: 1 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
             placeholder="Ask about eligibility, medications, side effects..."
             disabled={loading}
-            style={{
-              flex: 1,
-              padding: "10px 14px",
-              borderRadius: 8,
-              border: "1px solid #d1d5db",
-              fontSize: 14,
-              outline: "none",
-              background: loading ? "#f9fafb" : "#ffffff",
-            }}
+            variant="standard"
           />
-          <button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            style={{
-              padding: "10px 20px",
-              borderRadius: 8,
-              border: "none",
-              background: loading || !input.trim() ? "#d1d5db" : "#2563eb",
-              color: "#ffffff",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-            }}
-          >
+
+          <Button onClick={sendMessage} disabled={loading || !input.trim()} variant="contained" color="primary">
             Send
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Card>
+    </Box>
   );
 }
