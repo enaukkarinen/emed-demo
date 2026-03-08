@@ -9,6 +9,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.0.0",
     "@emed/es": "workspace:^",
+    "@emed/kb": "workspace:^",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "dotenv": "^17.2.3",
     "express": "^4.19.2",

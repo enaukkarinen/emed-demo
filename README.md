@@ -2,7 +2,7 @@
 
 [![Gitleaks Secret Scan](https://github.com/enaukkarinen/emed-demo/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/enaukkarinen/emed-demo/actions/workflows/gitleaks.yml)
 
-A RAG-based chat assistant for the eMed weight management programme. Ask questions about GLP-1 medications, eligibility, side effects, and the programme in natural language — answers are grounded in a curated knowledge base. Users can register their interest and have their details saved via a conversational lead capture flow.
+A chat assistant for the eMed weight management programme. Ask questions about GLP-1 medications, eligibility, side effects, and the programme in natural language — answers are grounded in a curated knowledge base. Users can register their interest and have their details saved via a conversational lead capture flow.
 
 ## Architecture
 
@@ -19,17 +19,17 @@ knowledge-base/   → Source documents (.txt) ingested into Elasticsearch
 #### RAG Chat
 
 1. **Ingestion** — 20 documents covering the eMed programme are chunked (~800 chars, 100 overlap), embedded using OpenAI `text-embedding-3-small`, and indexed into Elasticsearch with a `dense_vector` mapping.
-2. **Search** — on each user message, `kbSearch()` embeds the query and runs a kNN search against Elasticsearch (cosine similarity), returning the top 5 most relevant chunks.
-3. **Generation** — chunks are injected into the system prompt as context. OpenAI `gpt-4o-mini` generates a response grounded in that context.
+2. **Search** — when a clinical or programme-related question is asked, the model calls the `search_knowledge_base` tool, which embeds the query and runs a kNN search against Elasticsearch (cosine similarity), returning the top 5 most relevant chunks.
+3. **Generation** — the model uses the retrieved chunks to compose a grounded response. Simple greetings and small talk are answered directly without a KB lookup.
 
 ```
 User message
     ↓
-kbSearch() → Elasticsearch kNN (cosine similarity)
-    ↓
-Top 5 chunks injected into system prompt
-    ↓
 OpenAI tool-calling loop (runChat)
+    ↓ (if clinical/programme question)
+search_knowledge_base tool → Elasticsearch kNN (cosine similarity)
+    ↓
+Top 5 chunks returned to model
     ↓
 Response returned to client
 ```
@@ -56,12 +56,11 @@ The API route uses OpenAI Chat Completions with tools. If the model requests a t
 app/api/chat/
   route.ts                  → validates request, calls runChat, returns response
   run-chat.ts               → tool-calling loop
-  run-tool.ts               → dispatches tool calls to registry
-  build-system-prompt.ts    → RAG + lead capture prompt
+  build-system-prompt.ts    → system prompt with tool usage instructions
   mcp/
     get-mcp-client.ts       → MCP singleton client
-  tools/
-    tool-registry.ts        → save_lead tool definition + invoke
+  openai-tools/
+    tool-registry.ts        → search_knowledge_base + save_lead tool definitions + invoke
 ```
 
 ## Stack
@@ -143,9 +142,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Elasticsearch indices
 
-| Index        | Purpose                                          |
-| ------------ | ------------------------------------------------ |
-| `emed-kb`    | Knowledge base chunks with embeddings            |
+| Index | Purpose |
+|---|---|
+| `emed-kb` | Knowledge base chunks with embeddings |
 | `emed-leads` | Captured leads (name, email, summary, timestamp) |
 
 Index mappings are defined in `packages/es/src/indices/` — single source of truth for all index schemas.

@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-import { kbSearch } from "@emed/kb";
-import { buildSystemPrompt } from "./build-system-prompt";
+import { systemPrompt } from "./build-system-prompt";
 import { runChat } from "./run-chat";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -14,13 +13,8 @@ export async function POST(req: Request) {
     return new Response("Message is required", { status: 400 });
   }
 
-  const sources = await kbSearch(message, 5);
-  console.log(`[POST /api/chat] kbSearch returned ${sources?.length} sources`);
-
-  const context = sources.map((s) => `[${s.title}]\n${s.snippet}`).join("\n\n---\n\n");
-
   const messages = [
-    { role: "system" as const, content: buildSystemPrompt(context) },
+    { role: "system" as const, content: systemPrompt },
     ...history,
     { role: "user" as const, content: message },
   ];

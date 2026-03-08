@@ -11,7 +11,11 @@ export function registerSaveLeadTool(mcp: McpServer) {
       inputSchema: z.object({
         name: z.string().min(1).describe("The user's full name"),
         email: z.string().email().describe("The user's email address"),
-        summary: z.string().describe("A brief summary of what the user discussed and their interest in the programme"),
+        summary: z
+          .string()
+          .describe(
+            "2-3 sentences covering the user's reason for interest, any relevant medical context (e.g. current weight, conditions, medications), and any specific questions or concerns they raised",
+          ),
       }),
     },
     async ({ name, email, summary }) => {

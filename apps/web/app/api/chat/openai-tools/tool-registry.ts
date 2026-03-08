@@ -6,6 +6,9 @@ export type ToolDefinition = {
   invoke: (args: any) => Promise<any>;
 };
 
+/*
+ Reminder: OpenAI descriptions should be written from the model's perspective, describing when and how to call the tool.
+ */
 export const toolRegistry: Record<string, ToolDefinition> = {
   save_lead: {
     openai: {
@@ -21,7 +24,8 @@ export const toolRegistry: Record<string, ToolDefinition> = {
             email: { type: "string", description: "The user's email address" },
             summary: {
               type: "string",
-              description: "A brief summary of what the user discussed and their interest in the programme",
+              description:
+                "2-3 sentences covering: the user's reason for interest in the programme, any relevant medical context they mentioned (e.g. current weight, conditions, medications), and any specific questions or concerns they raised.",
             },
           },
           required: ["name", "email", "summary"],
@@ -33,6 +37,35 @@ export const toolRegistry: Record<string, ToolDefinition> = {
     invoke: async (args) => {
       const client = await getMcpClient();
       const result = await client.callTool({ name: "save_lead", arguments: args });
+      const text = (result.content as any[])?.[0]?.text ?? "{}";
+      return JSON.parse(text);
+    },
+  },
+  search_knowledge_base: {
+    openai: {
+      type: "function",
+      function: {
+        name: "search_knowledge_base",
+        description:
+          "Search the eMed knowledge base for GLP-1 programme information. Use this tool whenever the user asks about eligibility, medication, pricing, side effects, the consultation process, or how the programme works. Always call this before answering — do not rely on general knowledge about GLP-1 or weight loss medication, as answers must come from eMed's specific programme details.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description:
+                "A concise, self-contained search query optimised for retrieval. Rephrase the user's question if needed — for example 'What are the side effects of semaglutide?' rather than 'what about side effects?'",
+            },
+          },
+          required: ["query"],
+          additionalProperties: false,
+        },
+        strict: false,
+      },
+    },
+    invoke: async (args) => {
+      const client = await getMcpClient();
+      const result = await client.callTool({ name: "search_knowledge_base", arguments: args });
       const text = (result.content as any[])?.[0]?.text ?? "{}";
       return JSON.parse(text);
     },
