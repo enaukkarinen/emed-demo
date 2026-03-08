@@ -1,5 +1,7 @@
 # eMed Assistant
 
+[![Gitleaks Secret Scan](https://github.com/enaukkarinen/emed-demo/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/enaukkarinen/emed-demo/actions/workflows/gitleaks.yml)
+
 A RAG-based chat assistant for the eMed weight management programme. Ask questions about GLP-1 medications, eligibility, side effects, and the programme in natural language — answers are grounded in a curated knowledge base rather than relying on the model's general knowledge.
 
 ## Architecture
