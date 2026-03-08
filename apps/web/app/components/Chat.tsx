@@ -25,10 +25,15 @@ export function Chat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (!loading) inputRef.current?.focus();
+  }, [loading]);
 
   async function sendMessage() {
     const message = input.trim();
@@ -167,6 +172,7 @@ export function Chat() {
             placeholder="Ask about eligibility, medications, side effects..."
             disabled={loading}
             variant="standard"
+            inputRef={inputRef}
           />
           <Button onClick={sendMessage} disabled={loading || !input.trim()} variant="contained" color="primary">
             Send
