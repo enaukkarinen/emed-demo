@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, "../../");
 loadEnvConfig(repoRoot);
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@elastic/elasticsearch"],
+  serverExternalPackages: ["@elastic/elasticsearch", "@modelcontextprotocol/sdk", "openai"],
   outputFileTracingRoot: repoRoot,
 };
 
