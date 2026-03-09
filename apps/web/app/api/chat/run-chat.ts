@@ -25,7 +25,6 @@ async function executeToolCalls(toolCalls: OpenAI.Chat.ChatCompletionMessageTool
     const tool = toolRegistry[tc.function.name];
     if (!tool) throw new Error(`[executeToolCalls] Unknown tool: "${tc.function.name}"`);
 
-    console.log(`[executeToolCalls] → ${tc.function.name}`, args);
     const output = await tool.invoke(args);
     console.log(`[executeToolCalls] ← ${tc.function.name}`, output);
 
