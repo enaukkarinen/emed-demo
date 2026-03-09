@@ -23,23 +23,26 @@ export function registerSaveLeadTool(mcp: McpServer) {
       const es = getEsClient();
       await ensureLeadsIndex(es);
 
+      const createdAt = new Date().toISOString();
+      const document = {
+        id,
+        name,
+        email,
+        summary,
+        createdAt,
+      };
+
       await es.index({
         index: LEADS_INDEX,
         id,
-        document: {
-          id,
-          name,
-          email,
-          summary,
-          createdAt: new Date().toISOString(),
-        },
+        document,
       });
 
       return {
         content: [
           {
             type: "text",
-            text: JSON.stringify({ success: true, id, name, email, summary }),
+            text: JSON.stringify({ success: true, ...document }),
           },
         ],
       };

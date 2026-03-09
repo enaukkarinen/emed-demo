@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { getMcpClient } from "../mcp/get-mcp-client";
+import { LEAD_SAVED_EVENT, leadEvents } from "../../leads/lead-events";
 
 export type ToolDefinition = {
   openai: OpenAI.Chat.ChatCompletionTool;
@@ -47,7 +48,11 @@ export const toolRegistry: Record<string, ToolDefinition> = {
         },
       });
       const text = (result.content as any[])?.[0]?.text ?? "{}";
-      return JSON.parse(text);
+      const parsed = JSON.parse(text);
+
+      leadEvents.emit(LEAD_SAVED_EVENT, parsed);
+
+      return parsed;
     },
   },
   search_knowledge_base: {
