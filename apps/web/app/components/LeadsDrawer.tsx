@@ -3,26 +3,41 @@
 import { useEffect, useState } from "react";
 import { Lead } from "../types/lead";
 
-import { Drawer, Typography } from "@mui/material";
+import { Box, Chip, Drawer, Fab, IconButton, Tooltip, Typography } from "@mui/material";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import CloseIcon from "@mui/icons-material/Close";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import { LeadsList } from "./LeadsList";
 
-export const LeadsDrawer = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+export const DRAWER_WIDTH = 480;
+
+type LeadsDrawerProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export const LeadsDrawer = ({ open, onOpenChange }: LeadsDrawerProps) => {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [connected, setConnected] = useState(false);
 
   // Initial fetch
   useEffect(() => {
     fetchLeads();
   }, []);
 
+  // SSE setup
   useEffect(() => {
     const source = new EventSource("/api/leads/stream");
-    source.onopen = () => console.log("[LeadsDrawer] SSE connected");
+    source.onopen = () => {
+      console.log("[LeadsDrawer] SSE connected");
+      setConnected(true);
+    };
 
     source.onmessage = (event) => {
       console.log("[LeadsDrawer] Received SSE message:", event.data);
       const lead: Lead = JSON.parse(event.data);
       setLeads((prev) => [lead, ...prev]);
-      setIsOpen(true);
+      onOpenChange(true);
     };
 
     source.onerror = (err) => {
@@ -47,32 +62,62 @@ export const LeadsDrawer = () => {
   }
 
   return (
-    <Drawer
-      open={isOpen}
-      onClose={() => setIsOpen(false)}
-      anchor="right"
-      variant="persistent"
-      slotProps={{
-        paper: { style: { width: "400px", padding: "16px" } },
-      }}
-    >
-      <Typography variant="h5" sx={{ textAlign: "right" }}>
-        Leads
-      </Typography>
-      {leads.length === 0 ? (
-        <p>No leads found.</p>
-      ) : (
-        <ul>
-          {leads.map((lead) => (
-            <li key={lead.id}>
-              <h2>{lead.name}</h2>
-              <p>{lead.email}</p>
-              <p>{lead.summary}</p>
-              <p>Created At: {new Date(lead.createdAt).toLocaleString()}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Drawer>
+    <>
+      <Tooltip title="View leads" placement="left">
+        <Fab
+          color="primary"
+          onClick={() => onOpenChange(true)}
+          sx={{ position: "fixed", top: 24, right: 24 }}
+          size="medium"
+        >
+          <PeopleAltIcon />
+        </Fab>
+      </Tooltip>
+
+      <Drawer
+        open={open}
+        onClose={() => onOpenChange(false)}
+        anchor="right"
+        variant="persistent"
+        slotProps={{
+          paper: {
+            style: { width: DRAWER_WIDTH, display: "flex", flexFlow: "column", padding: "1rem", maxHeight: "100vh" },
+          },
+        }}
+      >
+        {/* Drawer header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2,
+            py: 1.5,
+            borderBottom: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="h6" fontWeight={600}>
+              Leads
+            </Typography>
+            <Chip label={leads.length} size="small" color="primary" />
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Tooltip title={connected ? "Live" : "Disconnected"}>
+              <FiberManualRecordIcon sx={{ fontSize: 12, color: connected ? "success.main" : "error.main" }} />
+            </Tooltip>
+            <IconButton onClick={() => onOpenChange(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Lead list */}
+        <Box sx={{ flex: 1, overflowY: "auto" }}>
+          <LeadsList leads={leads} />
+        </Box>
+      </Drawer>
+    </>
   );
 };
