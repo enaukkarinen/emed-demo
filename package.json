@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "pnpm -r --parallel --stream --reporter append-only dev",
     "build": "pnpm -r build",
+    "start": "pnpm -r start",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
@@ -15,7 +16,5 @@
     "@types/node": "20.0.0",
     "dotenv-cli": "^11.0.0",
     "tsx": "^4.21.0"
-  },
-  "dependencies": {
   }
 }
