@@ -36,7 +36,16 @@ export const toolRegistry: Record<string, ToolDefinition> = {
     },
     invoke: async (args) => {
       const client = await getMcpClient();
-      const result = await client.callTool({ name: "save_lead", arguments: args });
+
+      const uuid = crypto.randomUUID();
+
+      const result = await client.callTool({
+        name: "save_lead",
+        arguments: {
+          ...args,
+          id: uuid,
+        },
+      });
       const text = (result.content as any[])?.[0]?.text ?? "{}";
       return JSON.parse(text);
     },
