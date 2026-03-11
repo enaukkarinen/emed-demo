@@ -8,8 +8,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { LeadsList } from "./LeadsList";
-
-export const DRAWER_WIDTH = 480;
+import { DRAWER_WIDTH } from "../constants/drawer";
 
 type LeadsDrawerProps = {
   open: boolean;
