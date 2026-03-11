@@ -48,6 +48,13 @@ export const toolRegistry: Record<string, ToolDefinition> = {
         },
       });
       const text = (result.content as any[])?.[0]?.text ?? "{}";
+
+      // If the tool call failed, the MCP returns a string starting with "MCP error".
+      // In that case, we return a structured error object instead of throwing, to allow the chatbot to handle it gracefully.
+      if (!text || text.startsWith("MCP error")) {
+        return { success: false, error: text };
+      }
+
       const parsed = JSON.parse(text);
 
       leadEvents.emit(LEAD_SAVED_EVENT, parsed);
