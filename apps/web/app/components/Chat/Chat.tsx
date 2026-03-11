@@ -8,66 +8,17 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { keyframes } from "@mui/system";
 
-import { TypingIndicator } from "./TypingIndicator";
-import { CookieBanner } from "./CookieBanner";
-
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+import { TypingIndicator } from "../TypingIndicator";
+import { CookieBanner } from "../CookieBanner";
+import { chatReducer, initialChatState } from "./chat.reducer";
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-type State = {
-  messages: Message[];
-  input: string;
-  loading: boolean;
-  consented: boolean;
-};
-
-type Action =
-  | { type: "message_sent"; payload: string }
-  | { type: "message_received"; payload: string }
-  | { type: "message_failed" }
-  | { type: "input_changed"; payload: string }
-  | { type: "consented" };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "message_sent":
-      return {
-        ...state,
-        input: "",
-        loading: true,
-        messages: [...state.messages, { role: "user", content: action.payload }, { role: "assistant", content: "" }],
-      };
-    case "message_received": {
-      const messages = [...state.messages];
-      messages[messages.length - 1] = { role: "assistant", content: action.payload };
-      return { ...state, messages, loading: false };
-    }
-    case "message_failed": {
-      const messages = [...state.messages];
-      messages[messages.length - 1] = { role: "assistant", content: "Sorry, something went wrong. Please try again." };
-      return { ...state, messages, loading: false };
-    }
-    case "input_changed":
-      return { ...state, input: action.payload };
-    case "consented":
-      return { ...state, consented: true };
-  }
-}
-
 export function Chat() {
-  const [s, dispatch] = useReducer(reducer, {
-    messages: [],
-    input: "",
-    loading: false,
-    consented: false,
-  });
+  const [s, dispatch] = useReducer(chatReducer, initialChatState);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

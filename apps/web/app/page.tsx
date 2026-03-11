@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "@mui/system";
-import { Chat } from "./components/Chat";
+import { Chat } from "./components/Chat/Chat";
 
 import { useState } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
