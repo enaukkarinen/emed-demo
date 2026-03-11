@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Typography, Divider } from "@mui/material";
 import { Box } from "@mui/system";
 
 import { Lead } from "../types/lead";
 
-const LeadItem = ({ lead, isLast }: { lead: Lead; isLast: boolean }) => {
+const LeadItem = memo(({ lead }: { lead: Lead }) => {
   return (
-    <Box>
+    <>
       <Box sx={{ px: 2, py: 1.5 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Typography variant="subtitle2" fontWeight={600}>
@@ -36,10 +36,10 @@ const LeadItem = ({ lead, isLast }: { lead: Lead; isLast: boolean }) => {
           </Typography>
         )}
       </Box>
-      {!isLast && <Divider sx={{ my: 0 }} />}
-    </Box>
+      <Divider sx={{ "&:last-child": { display: "none" } }} />
+    </>
   );
-};
+});
 export const LeadsList = ({ leads }: { leads: Lead[] }) => {
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -54,7 +54,7 @@ export const LeadsList = ({ leads }: { leads: Lead[] }) => {
           No leads yet. They'll appear here in real time.
         </Typography>
       ) : (
-        leads.map((lead, i) => <LeadItem key={lead.id ?? i} lead={lead} isLast={i === leads.length - 1} />)
+        leads.map((lead, i) => <LeadItem key={lead.id ?? i} lead={lead} />)
       )}
     </Box>
   );
